@@ -55,7 +55,7 @@
                                     {{ csrf_field() }}
                                     <div class="flex flex-col">
                                         <label for="email"
-                                            class="md:text-sm text-xs text-[#444444] font-normal mb-1 ml-1">Name</label>
+                                            class="md:text-sm text-xs text-[#444444] font-normal mb-1 ml-1">Username</label>
                                         <div
                                             class="relative flex overflow-hidden rounded-md border-2 transition focus-within:border-blue-800 border-gray-200 hover:border-blue-800">
                                             <input type="text" id="login-email" name="email"
@@ -76,7 +76,7 @@
                                     <button type="submit"
                                         class=" w-full rounded-md bg-blue-800 px-4 py-2 mt-5 text-center md:text-base text-sm font-normal text-white hover:text-blue-800 shadow-md border border-blue-600 ring-blue-600 ring-offset-2 transition-colors duration-300 hover:bg-white focus:ring-2">Login</button>
                                 </form>
-                                <div class="text-center md:my-4 my-2">
+                                <!-- <div class="text-center md:my-4 my-2">
                                     <p class="whitespace-nowrap font-normal text-gray-900 underline underline-offset-4 md:text-base text-sm">
                                         or</p>
                                 </div>
@@ -84,7 +84,7 @@
                                     <button type="submit"
                                         class="mt-2 w-full rounded-md bg-white px-4 py-2 text-center md:text-base text-sm font-normal text-blue-800 hover:text-white shadow-md border border-blue-600 ring-blue-600 ring-offset-2 transition-colors duration-300 hover:bg-blue-800 focus:ring-2">Register
                                     </button>
-                                </a>
+                                </a> -->
                             </div>
                         </div>
                     </div>

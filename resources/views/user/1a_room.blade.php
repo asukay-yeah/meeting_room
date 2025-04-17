@@ -145,18 +145,28 @@
 
 <body class="font-[outfit] p-6 lg:pt-6">
     <div class="w-full md:mb-4 mb-6">
-        <button onclick="window.history.back()" class="flex items-center text-gray-600 hover:text-gray-900 transition-colors duration-200">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <a href="{{ url('user/home') }}"
+            class="flex items-center text-gray-600 hover:text-gray-900 transition-colors duration-200">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
-            <span class="font-medium">Back to Previous Page</span>
-        </button>
+            <span class="font-medium">Back to Home</span>
+        </a>
     </div>
     <div class="w-full flex flex-col md:flex-row md:px-12">
-        
+
         <div class="text-area w-full md:w-[40%] md:pr-10">
+
+            @if(session('success'))
+            <div class="bg-green-100 text-green-800 p-3 rounded mb-4 w-fit">{{ session('success') }}</div>
+            @endif
+            @if(session('error'))
+            <div class="bg-red-100 text-red-800 p-3 rounded mb-4 w-fit">{{ session('error') }}</div>
+            @endif
+
             <div class="flex items-center">
-                <p class="text-3xl text-[#333333] mr-3 md:mt-5">1A Floor Room</p>
+                <p class="text-3xl text-[#333333] mr-3 md:mt-5">{{ $room->name }}</p>
                 <div class="loader"></div>
             </div>
             <p class="mt-1 text-[#555555] font-light">Balai Monitor Spektrum Frekuensi Radio Kelas I Jakarta</p>
@@ -185,7 +195,7 @@
                 </div>
 
                 <!-- Grid untuk tanggal-tanggal -->
-                <div id="calendarGrid" class="grid grid-cols-7 gap-1">
+                <div id="calendarGrid" class="grid grid-cols-7 gap-1" data-booked-dates="{{ json_encode($bookedDates) }}">
                     <!-- Calendar days will be inserted here via JavaScript -->
                 </div>
 
@@ -198,20 +208,23 @@
                 </div>
             </div>
 
+            
+
             <div class="card-booking w-full mx-auto bg-white p-8 rounded-xl shadow-lg border border-gray-100">
                 <div class="mb-6">
-                    <h2 class="text-2xl font-medium text-gray-800">Booking Ruangan 1A</h2>
+                    <h2 class="text-2xl font-medium text-gray-800">Booking {{ $room->name }}</h2>
                     <p class="text-gray-500 mt-1 font-light">Floor Room Reservation</p>
                 </div>
-            
-                <div class="space-y-5">
+
+                <form class="space-y-5" action="/user/rooms/{{ $room->id }}/book" method="POST">
+                    {{ csrf_field() }}
                     <!-- Baris pertama: Nama dan Tanggal berdampingan -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <!-- Nama -->
                         <div class="group">
                             <label for="booking-name" class="block text-sm font-normal text-gray-700 mb-2">Nama</label>
                             <div class="relative">
-                                <input type="text" id="booking-name"
+                                <input type="text" id="booking-name" name="nama_kantor"
                                     class="w-full py-3 px-4 bg-gray-50 border border-gray-200 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200">
                                 <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                                     <svg xmlns="http://www.w3.org/2000/svg"
@@ -223,12 +236,12 @@
                                 </div>
                             </div>
                         </div>
-            
+
                         <!-- Tanggal -->
                         <div class="group">
                             <label for="booking-date" class="block text-sm text-gray-700 mb-2">Tanggal</label>
                             <div class="relative">
-                                <input type="date" id="booking-date"
+                                <input type="date" id="booking-date" name="booking_date"
                                     class="w-full py-3 px-4 bg-gray-50 border border-gray-200 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200">
                                 <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                                     <svg xmlns="http://www.w3.org/2000/svg"
@@ -241,24 +254,25 @@
                             </div>
                         </div>
                     </div>
-            
+
                     <!-- Baris kedua: Kebutuhan -->
                     <div class="group">
-                        <label for="booking-needs" class="block text-sm font-normal text-gray-700 mb-2">Kebutuhan</label>
+                        <label for="booking-needs"
+                            class="block text-sm font-normal text-gray-700 mb-2">Kebutuhan</label>
                         <div class="relative">
-                            <textarea id="booking-needs" rows="3"
+                            <textarea id="booking-needs" rows="3" name="purpose"
                                 class="w-full py-3 px-4 bg-gray-50 border border-gray-200 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"></textarea>
                         </div>
                     </div>
-            
+
                     <!-- Tombol konfirmasi dengan efek hover yang elegan -->
                     <div class="mt-8">
-                        <button id="confirm-booking"
+                        <button id="confirm-booking" type="submit"
                             class="w-full bg-[#333333] hover:bg-[#222222] text-white py-3.5 rounded-lg transition-all duration-200 font-normal shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
                             Konfirmasi Booking
                         </button>
                     </div>
-                </div>
+                </form>
             </div>
 
             <div class="flex flex-wrap justify-around my-6">
@@ -367,12 +381,16 @@
 
         <div class="flex image-area w-full md:w-[60%] md:pl-10">
             <div class="w-full">
-                <img class="w-full object-cover rounded-[25px] md:rounded-[40px] md:h-[550px]" src="../../images/expoert.png" alt="">
+                <img class="w-full object-cover rounded-[25px] md:rounded-[40px] md:h-[550px]"
+                    src="{{ asset('assets/expoert.png') }}" alt="">
                 <div class="flex w-full md:py-5 py-3">
-                    <img class="w-[48%] md:w-[49%] object-cover rounded-[16px] md:rounded-[30px] h-auto mr-[4%] md:mr-[2%]" src="../../images/expoert.png" alt="">
-                    <img class="w-[48%] md:w-[49%] object-cover rounded-[16px] md:rounded-[30px] h-auto " src="../../images/expoert.png" alt="">
+                    <img class="w-[48%] md:w-[49%] object-cover rounded-[16px] md:rounded-[30px] h-auto mr-[4%] md:mr-[2%]"
+                        src="{{ asset('assets/expoert.png') }}" alt="">
+                    <img class="w-[48%] md:w-[49%] object-cover rounded-[16px] md:rounded-[30px] h-auto "
+                        src="{{ asset('assets/expoert.png') }}" alt="">
                 </div>
-                <img class="w-full object-cover rounded-[25px] md:rounded-[40px] md:h-[550px]" src="../../images/expoert.png" alt="">
+                <img class="w-full object-cover rounded-[25px] md:rounded-[40px] md:h-[550px]"
+                    src="{{ asset('assets/expoert.png') }}" alt="">
 
             </div>
         </div>

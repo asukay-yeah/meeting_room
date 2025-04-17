@@ -1,4 +1,7 @@
 document.addEventListener('DOMContentLoaded', function () {
+  // Get room name from the page
+  const roomName = document.querySelector('.text-3xl').textContent.trim();
+  
   // Set tanggal default ke hari ini
   const today = new Date();
   const yyyy = today.getFullYear();
@@ -11,76 +14,105 @@ document.addEventListener('DOMContentLoaded', function () {
   const formattedToday = yyyy + '-' + mm + '-' + dd;
   document.getElementById('booking-date').value = formattedToday;
 
+  // Get booked dates from a data attribute in HTML
+  // In your Blade template, add: data-booked-dates="{{ json_encode($bookedDates) }}"
+  // to an element like the calendar container
+  let bookedDatesRaw = [];
+  const calendarElement = document.getElementById('calendarGrid');
+  if (calendarElement && calendarElement.dataset.bookedDates) {
+    try {
+      bookedDatesRaw = JSON.parse(calendarElement.dataset.bookedDates);
+    } catch (e) {
+      console.error('Error parsing booked dates:', e);
+    }
+  }
+
+  let bookedDatesMap = {}; // We'll organize booked dates by year-month for easier lookup
+
+  // Process the booked dates into a map for efficient lookup
+  bookedDatesRaw.forEach(dateStr => {
+    const date = new Date(dateStr);
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const day = date.getDate();
+    
+    // Create year-month key
+    const yearMonthKey = `${year}-${month}`;
+    
+    if (!bookedDatesMap[yearMonthKey]) {
+      bookedDatesMap[yearMonthKey] = [];
+    }
+    
+    bookedDatesMap[yearMonthKey].push(day);
+  });
+
   // Validasi tanggal agar tidak bisa memilih tanggal yang sudah lewat
   document.getElementById('booking-date').addEventListener('change', function () {
-      const selectedDate = new Date(this.value);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+    const selectedDate = new Date(this.value);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-      if (selectedDate < today) {
-          alert('Tidak dapat memilih tanggal yang sudah lewat.');
-          this.value = formattedToday;
-      }
+    if (selectedDate < today) {
+      alert('Tidak dapat memilih tanggal yang sudah lewat.');
+      this.value = formattedToday;
+      return;
+    }
+
+    // Check if the selected date is already booked
+    const selectedYear = selectedDate.getFullYear();
+    const selectedMonth = selectedDate.getMonth();
+    const selectedDay = selectedDate.getDate();
+    const yearMonthKey = `${selectedYear}-${selectedMonth}`;
+    
+    if (bookedDatesMap[yearMonthKey] && bookedDatesMap[yearMonthKey].includes(selectedDay)) {
+      alert(`Untuk ${roomName} Tanggal ini sudah di-booking. Silakan pilih tanggal atau ruangan lain.`);
+      this.value = formattedToday;
+    }
   });
 
   // Tombol konfirmasi booking
-  document.getElementById('confirm-booking').addEventListener('click', function () {
-      const bookingName = document.getElementById('booking-name').value;
-      const bookingDate = document.getElementById('booking-date').value;
-      const bookingNeeds = document.getElementById('booking-needs').value;
+  document.getElementById('confirm-booking').addEventListener('click', function (e) {
+    const bookingName = document.getElementById('booking-name').value;
+    const bookingDate = document.getElementById('booking-date').value;
+    const bookingNeeds = document.getElementById('booking-needs').value;
 
-      // Validasi form sebelum submit
-      if (!bookingName || !bookingDate || !bookingNeeds) {
-          alert('Mohon lengkapi semua field.');
-          return;
-      }
+    // Validasi form sebelum submit
+    if (!bookingName || !bookingDate || !bookingNeeds) {
+      e.preventDefault(); // Prevent form submission
+      alert('Mohon lengkapi semua field.');
+      return;
+    }
 
-      // Format tanggal untuk ditampilkan
-      const formattedDate = formatDate(bookingDate);
-
-      // Di sini Anda bisa menambahkan kode untuk mengirim data ke server
-      // atau menampilkan konfirmasi booking
-      alert(
-          `Booking berhasil!\n\nNama: ${bookingName}\nTanggal: ${formattedDate}\nKebutuhan: ${bookingNeeds}`
-      );
-
-      // Kode untuk mengirim data ke server bisa ditambahkan di sini
-      // fetch('/api/booking', {
-      //     method: 'POST',
-      //     headers: {
-      //         'Content-Type': 'application/json',
-      //     },
-      //     body: JSON.stringify({
-      //         name: bookingName,
-      //         date: bookingDate,
-      //         needs: bookingNeeds
-      //     }),
-      // })
-      // .then(response => response.json())
-      // .then(data => {
-      //     console.log('Success:', data);
-      // })
-      // .catch((error) => {
-      //     console.error('Error:', error);
-      // });
+    // Check if the selected date is already booked
+    const selectedDate = new Date(bookingDate);
+    const selectedYear = selectedDate.getFullYear();
+    const selectedMonth = selectedDate.getMonth();
+    const selectedDay = selectedDate.getDate();
+    const yearMonthKey = `${selectedYear}-${selectedMonth}`;
+    
+    if (bookedDatesMap[yearMonthKey] && bookedDatesMap[yearMonthKey].includes(selectedDay)) {
+      e.preventDefault(); // Prevent form submission
+      alert(`Untuk ${roomName} Tanggal ini sudah di-booking. Silakan pilih tanggal atau ruangan lain.`);
+      return;
+    }
   });
 
   // Fungsi untuk memformat tanggal ke format Indonesia
   function formatDate(dateString) {
-      const months = [
-          'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-          'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
-      ];
+    const months = [
+      'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+    ];
 
-      const date = new Date(dateString);
-      const day = date.getDate();
-      const month = months[date.getMonth()];
-      const year = date.getFullYear();
+    const date = new Date(dateString);
+    const day = date.getDate();
+    const month = months[date.getMonth()];
+    const year = date.getFullYear();
 
-      return `${day} ${month} ${year}`;
+    return `${day} ${month} ${year}`;
   }
 
-  // Kode calendar tetap dipertahankan
+  // Calendar visualization
   const monthYearDisplay = document.getElementById('monthYearDisplay');
   const calendarGrid = document.getElementById('calendarGrid');
   const prevMonthBtn = document.getElementById('prevMonth');
@@ -88,9 +120,6 @@ document.addEventListener('DOMContentLoaded', function () {
     
   // Tanggal saat ini
   let currentDate = new Date();
-    
-  // Contoh tanggal yang sudah dibooking (untuk visualisasi saja)
-  const bookedDates = [5, 10, 15, 20, 25];
     
   // Array nama bulan
   const monthNames = [
@@ -135,6 +164,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const isCurrentMonth = today.getMonth() === currentMonth && today.getFullYear() === currentYear;
     const todayDate = today.getDate();
     
+    // Get the booked dates for the current month
+    const yearMonthKey = `${currentYear}-${currentMonth}`;
+    const currentMonthBookedDates = bookedDatesMap[yearMonthKey] || [];
+    
     // Menambahkan tanggal-tanggal dalam bulan
     for (let day = 1; day <= daysInMonth; day++) {
       const dayElement = document.createElement('div');
@@ -146,9 +179,36 @@ document.addEventListener('DOMContentLoaded', function () {
         dayElement.classList.add('today');
       }
       // Cek apakah tanggal ini sudah dibooking
-      else if (bookedDates.includes(day)) {
+      else if (currentMonthBookedDates.includes(day)) {
         dayElement.classList.add('booked');
       }
+      
+      // Add click event for selecting a date
+      dayElement.addEventListener('click', function() {
+        // Don't allow selecting booked dates
+        if (currentMonthBookedDates.includes(day)) {
+          alert(`Untuk ${roomName} Tanggal ini sudah di-booking. Silakan pilih tanggal atau ruangan lain.`);
+          return;
+        }
+        
+        // Don't allow selecting past dates
+        const clickedDate = new Date(currentYear, currentMonth, day);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        if (clickedDate < today) {
+          alert('Tidak dapat memilih tanggal yang sudah lewat.');
+          return;
+        }
+        
+        // Set the date in the booking form
+        let mm = currentMonth + 1;
+        if (mm < 10) mm = '0' + mm;
+        let dd = day;
+        if (dd < 10) dd = '0' + dd;
+        
+        document.getElementById('booking-date').value = `${currentYear}-${mm}-${dd}`;
+      });
       
       calendarGrid.appendChild(dayElement);
     }

@@ -17,6 +17,7 @@ class CreateBookingsTable extends Migration
             $table->increments('id');
             $table->integer('user_id')->unsigned();
             $table->integer('room_id')->unsigned();
+            $table->string('nama_kantor');
             $table->date('booking_date');
             $table->text('purpose');
             $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
