@@ -9,6 +9,9 @@ class Room extends Model
     protected $fillable = [
         'name',
         'description',
+        'capacity',
+        'ac',
+        'screen',
     ];
 
     public function bookings()
